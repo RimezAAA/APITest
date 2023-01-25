@@ -13,6 +13,7 @@
         Введите сообщение:<br />
         <input type="text" id="message" /><br /><br />
         <input type="button" id="sendBtn" value="Отправить" disabled="disabled" />
+        <input type="button" id="sendBtn2" value="Получить" />
     </div>
     <div id="chatroom"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
@@ -20,19 +21,32 @@
             .withUrl("/chat")
             .build();
 
+        var usersmessages;
+        document.getElementById("sendBtn2").addEventListener("click", function () {
+            hubconnection.invoke("GetMessages", function (data) {
+                console.log('123');
+            });
+        });
+
+        window.onload = function () {
+            hubConnection.invoke("Send", message, userName, email)
+        }
+
         document.getElementById("sendBtn").addEventListener("click", function () {
             const userName = document.getElementById("userName").value;   // получаем введенное имя
             const email = document.getElementById("email").value;
             const message = document.getElementById("message").value;
 
-            hubConnection.invoke("Send", message, userName, email) // отправка данных серверу
-                .catch(function (err) {
+            hubConnection.invoke("Send", message, userName, email).then(function (data) {
+                for (let i = 0; i < data.length; i++) {
+                    
+                }
+            }).catch(function (err) {
                     return console.error(err.toString());
                 });
         });
         // получение данных с сервера
         hubConnection.on("Receive", function (message, userName, email) {
-
             // создаем элемент <b> для имени пользователя
             const userNameElem = document.createElement("b");
             userNameElem.textContent = `${userName}(${email}): `;
